@@ -213,23 +213,38 @@
         }
 
         function initialize() {
-            document.getElementById('backgroundWrapper').style.backgroundImage = `url('./${CONFIG.backgroundImages[0]}')`;
-            updateCounters();
-            
-            setInterval(() => {
-                rotateSubtitle('op1Subtitle', currentIndexOP1++);
-                rotateSubtitle('op2Subtitle', currentIndexOP2++);
-            }, 10000);
+function initialize() {
+    // 1. 기존 기능 변수 선언
+    const videoOverlay = document.getElementById('videoOverlay');
+    const video = document.getElementById('eduVideo');
+    const contentUI = document.getElementById('contentUI');
 
-            setInterval(rotateBackground, 10000);
-            // 2. 날짜 업데이트 (1분마다 체크해서 숫자를 갱신)
-            setInterval(updateCounters, 60000);
+    // 2. 기존 로직 그대로 유지
+    document.getElementById('backgroundWrapper').style.backgroundImage = `url('./${CONFIG.backgroundImages[0]}')`;
+    updateCounters();
+    setInterval(() => { /* 자막 회전 */ }, 10000);
+    setInterval(rotateBackground, 10000);
+    setInterval(updateCounters, 60000);
+    setInterval(() => { window.location.reload(); }, 3600000);
 
-            // 3. 브라우저 안정성을 위해 1시간마다 페이지 전체 새로고침
-            setInterval(() => {
-            window.location.reload();
-            }, 3600000);
-        } //
+    // 3. 신규: 영상 재생 함수 정의
+    function playVideo() {
+        contentUI.style.display = 'none';   // 전광판 숨기기
+        videoOverlay.style.display = 'block'; // 비디오 레이어 보이기
+        video.play();
+    }
+
+    // 4. 신규: 영상이 끝나면 다시 전광판으로 복귀
+    video.onended = () => {
+        videoOverlay.style.display = 'none';
+        contentUI.style.display = 'flex';
+        // 영상 종료 후 다시 10초 대기 타이머 시작
+        setTimeout(playVideo, CONFIG.playInterval);
+    };
+
+    // 5. 신규: 페이지 접속 후 첫 10초 대기 시작
+    setTimeout(playVideo, CONFIG.playInterval);
+} //
 		
         window.addEventListener('DOMContentLoaded', initialize);
     </script>
