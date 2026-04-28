@@ -130,7 +130,16 @@
 </head>
 <body>
     <div class="main-container">
-        <div class="background-wrapper" id="backgroundWrapper"></div>
+		
+<div class="main-container" id="contentUI">
+
+<div id="videoOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:1000; background:#000;">
+    <video id="eduVideo" muted playsinline style="width:100%; height:100%; object-fit:contain;">
+        <source src="test_video.mp4" type="video/mp4">
+    </video>
+</div>       
+		
+		<div class="background-wrapper" id="backgroundWrapper"></div>
 
         <div class="operation-section">
             <div class="logo-area"><img src="./logo.png" alt="logo"></div>
@@ -167,7 +176,8 @@
             ],
             op1StartDate: new Date('2024-06-12'),
             op2StartDate: new Date('2024-10-24')
-        };
+            playInterval: 10000 // ★ 테스트용 10초 (10분으로 변경 시 600000 입력)
+		};
 
         let currentIndexOP1 = 0;
         let currentIndexOP2 = 0;
