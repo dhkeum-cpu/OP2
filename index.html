@@ -215,34 +215,42 @@ function initialize() {
             const video = document.getElementById('eduVideo');
             const mainUI = document.querySelector('.main-container');
 
-            // 기존 배경/카운터 설정 (디자인 유지)
+            // 초기 설정
             document.getElementById('backgroundWrapper').style.backgroundImage = `url('./${CONFIG.backgroundImages[0]}')`;
             updateCounters();
-            
-            // 타이머 설정들
-            setInterval(() => {
-                rotateSubtitle('op1Subtitle', currentIndexOP1++);
-                rotateSubtitle('op2Subtitle', currentIndexOP2++);
-            }, 10000);
-            setInterval(rotateBackground, 10000);
-            setInterval(updateCounters, 60000);
-            setInterval(() => { window.location.reload(); }, 3600000);
 
-            // 영상 재생 로직 (추가된 부분)
+            // 10초마다 실행되는 순환 로직
+            const rotationInterval = setInterval(() => {
+                // 자막과 배경 전환
+                rotateSubtitle('op1Subtitle', ++currentIndexOP1);
+                rotateSubtitle('op2Subtitle', ++currentIndexOP2);
+                rotateBackground();
+                
+                currentCycleCount++;
+
+                // [핵심] 사진과 문구가 한 바퀴(설정된 개수만큼) 다 돌았을 때
+                if (currentCycleCount >= totalItems) {
+                    currentCycleCount = 0; // 카운트 초기화
+                    playVideo();           // 영상 재생
+                }
+            }, 10000); // 10초 주기는 유지
+
             function playVideo() {
-                mainUI.style.display = 'none';      // 전광판 숨기기
-                videoOverlay.style.display = 'block'; // 비디오 보이기
-                video.play().catch(e => console.log("비디오 재생 시작"));
+                // 영상 재생 시 자막/배경 순환 잠시 멈춤 (선택 사항)
+                mainUI.style.display = 'none';
+                videoOverlay.style.display = 'block';
+                video.play().catch(e => console.log("재생 시작"));
             }
 
             video.onended = () => {
                 videoOverlay.style.display = 'none';
                 mainUI.style.display = 'flex';
-                setTimeout(playVideo, CONFIG.playInterval); // 10초 뒤 다시 재생
+                // 영상 끝나면 다시 처음부터 카운트 시작
             };
 
-            // 처음 시작 후 10초 뒤에 영상 첫 실행
-            setTimeout(playVideo, CONFIG.playInterval);
+            // 시간 업데이트 및 새로고침 로직은 그대로 유지
+            setInterval(updateCounters, 60000);
+            setInterval(() => { window.location.reload(); }, 3600000);
         }
 		
         window.addEventListener('DOMContentLoaded', initialize);
