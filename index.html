@@ -129,7 +129,13 @@
     </style>
 </head>
 <body>
-    <div class="main-container">
+<div id="videoOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:1000; background:#000;">
+        <video id="eduVideo" muted playsinline style="width:100%; height:100%; object-fit:contain;">
+            <source src="test_video.mp4" type="video/mp4">
+        </video>
+    </div>
+	
+	<div class="main-container">
         <div class="background-wrapper" id="backgroundWrapper"></div>
 
         <div class="operation-section">
@@ -166,8 +172,10 @@
                 'background4.jpg', 'background5.jpg', 'background6.jpg', 'background7.jpg'
             ],
             op1StartDate: new Date('2024-06-12'),
-            op2StartDate: new Date('2024-10-24')
-        };
+            op2StartDate: new Date('2024-10-24'), 
+            playInterval: 10000 		
+		
+		};
 
         let currentIndexOP1 = 0;
         let currentIndexOP2 = 0;
@@ -202,24 +210,40 @@
             document.getElementById('op2DayCounter').textContent = calc(CONFIG.op2StartDate);
         }
 
-        function initialize() {
+function initialize() {
+            const videoOverlay = document.getElementById('videoOverlay');
+            const video = document.getElementById('eduVideo');
+            const mainUI = document.querySelector('.main-container');
+
+            // 기존 배경/카운터 설정 (디자인 유지)
             document.getElementById('backgroundWrapper').style.backgroundImage = `url('./${CONFIG.backgroundImages[0]}')`;
             updateCounters();
             
+            // 타이머 설정들
             setInterval(() => {
                 rotateSubtitle('op1Subtitle', currentIndexOP1++);
                 rotateSubtitle('op2Subtitle', currentIndexOP2++);
             }, 10000);
-
             setInterval(rotateBackground, 10000);
-            // 2. 날짜 업데이트 (1분마다 체크해서 숫자를 갱신)
             setInterval(updateCounters, 60000);
+            setInterval(() => { window.location.reload(); }, 3600000);
 
-            // 3. 브라우저 안정성을 위해 1시간마다 페이지 전체 새로고침
-            setInterval(() => {
-            window.location.reload();
-            }, 3600000);
-        } //
+            // 영상 재생 로직 (추가된 부분)
+            function playVideo() {
+                mainUI.style.display = 'none';      // 전광판 숨기기
+                videoOverlay.style.display = 'block'; // 비디오 보이기
+                video.play().catch(e => console.log("비디오 재생 시작"));
+            }
+
+            video.onended = () => {
+                videoOverlay.style.display = 'none';
+                mainUI.style.display = 'flex';
+                setTimeout(playVideo, CONFIG.playInterval); // 10초 뒤 다시 재생
+            };
+
+            // 처음 시작 후 10초 뒤에 영상 첫 실행
+            setTimeout(playVideo, CONFIG.playInterval);
+        }
 		
         window.addEventListener('DOMContentLoaded', initialize);
     </script>
