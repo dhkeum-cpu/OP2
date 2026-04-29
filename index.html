@@ -157,8 +157,7 @@
         </div>
     </div>
 
-    <script>
-        const CONFIG = {
+const CONFIG = {
             subtitles: [
                 '함께 만드는 안전한 작업장',
                 '나의 안전이 동료의 안전입니다',
@@ -173,13 +172,16 @@
             ],
             op1StartDate: new Date('2024-06-12'),
             op2StartDate: new Date('2024-10-24'), 
-            playInterval: 10000 		
-		
-		};
+            playInterval: 10000 
+        };
 
         let currentIndexOP1 = 0;
         let currentIndexOP2 = 0;
         let bgIndex = 0;
+        
+        // [수정] 한 바퀴를 계산하기 위한 변수 추가
+        let currentCycleCount = 0;
+        const totalItems = Math.max(CONFIG.subtitles.length, CONFIG.backgroundImages.length);
 
         function rotateBackground() {
             const bgWrapper = document.getElementById('backgroundWrapper');
@@ -199,61 +201,61 @@
         function updateCounters() {
             const today = new Date();
             today.setHours(0,0,0,0);
-
             const calc = (start) => {
                 const s = new Date(start);
                 s.setHours(0,0,0,0);
                 return Math.max(0, Math.floor((today - s) / (1000 * 60 * 60 * 24)));
             };
-
             document.getElementById('op1DayCounter').textContent = calc(CONFIG.op1StartDate);
             document.getElementById('op2DayCounter').textContent = calc(CONFIG.op2StartDate);
         }
 
-function initialize() {
+        function initialize() {
             const videoOverlay = document.getElementById('videoOverlay');
             const video = document.getElementById('eduVideo');
             const mainUI = document.querySelector('.main-container');
 
-            // 초기 설정
+            // 초기 화면 설정
             document.getElementById('backgroundWrapper').style.backgroundImage = `url('./${CONFIG.backgroundImages[0]}')`;
             updateCounters();
 
-            // 10초마다 실행되는 순환 로직
-            const rotationInterval = setInterval(() => {
-                // 자막과 배경 전환
-                rotateSubtitle('op1Subtitle', ++currentIndexOP1);
-                rotateSubtitle('op2Subtitle', ++currentIndexOP2);
-                rotateBackground();
-                
+            // 10초마다 실행되는 순환 타이머
+            const rotationTimer = setInterval(() => {
                 currentCycleCount++;
 
-                // [핵심] 사진과 문구가 한 바퀴(설정된 개수만큼) 다 돌았을 때
+                // 모든 사진/문구를 한 바퀴 다 보여줬는지 확인 (7장 기준 70초 후 실행)
                 if (currentCycleCount >= totalItems) {
+                    playVideo();
                     currentCycleCount = 0; // 카운트 초기화
-                    playVideo();           // 영상 재생
+                } else {
+                    // 영상 재생 시점이 아닐 때만 화면 전환
+                    rotateSubtitle('op1Subtitle', ++currentIndexOP1);
+                    rotateSubtitle('op2Subtitle', ++currentIndexOP2);
+                    rotateBackground();
                 }
-            }, 10000); // 10초 주기는 유지
+            }, 10000);
 
             function playVideo() {
-                // 영상 재생 시 자막/배경 순환 잠시 멈춤 (선택 사항)
                 mainUI.style.display = 'none';
                 videoOverlay.style.display = 'block';
-                video.play().catch(e => console.log("재생 시작"));
+                video.play().catch(e => console.log("자동재생 방지됨"));
             }
 
             video.onended = () => {
                 videoOverlay.style.display = 'none';
                 mainUI.style.display = 'flex';
-                // 영상 끝나면 다시 처음부터 카운트 시작
+                // 영상 끝난 직후 첫 화면을 즉시 갱신
+                rotateSubtitle('op1Subtitle', ++currentIndexOP1);
+                rotateSubtitle('op2Subtitle', ++currentIndexOP2);
+                rotateBackground();
             };
 
-            // 시간 업데이트 및 새로고침 로직은 그대로 유지
             setInterval(updateCounters, 60000);
             setInterval(() => { window.location.reload(); }, 3600000);
         }
-		
+        
         window.addEventListener('DOMContentLoaded', initialize);
+
     </script>
 </body>
 </html>
